@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f7d32">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Verb Trainer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Irregular Verbs Trainer</title>
+<style>
+:root {
+  --green:#2f7d32; --green2:#5ba85e; --lime:#c6e86a;
+  --ink:#162018; --muted:#657067; --bg:#f5f7f4; --card:#ffffff;
+  --ok:#287a3c; --bad:#b63737; --line:#dfe7df;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,#edf4eb 0,#f8faf7 28%,#f5f7f4 100%);color:var(--ink)}
+.app{max-width:760px;margin:0 auto;padding:18px 14px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand h1{font-size:1.35rem;margin:0;font-weight:800;letter-spacing:.2px}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:.92rem}
+.pill{background:#e2f0df;color:#285f2b;border:1px solid #cae3c7;border-radius:999px;padding:7px 10px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;box-shadow:0 10px 30px rgba(31,54,35,.07);overflow:hidden}
+.topbar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line)}
+.stat{background:#fff;padding:12px;text-align:center}
+.stat b{display:block;font-size:1.12rem}
+.stat span{font-size:.75rem;color:var(--muted)}
+.progress{height:8px;background:#e8eee7}
+.progress > div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--lime));transition:width .25s}
+.card{padding:22px 18px 18px}
+.label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.prompt{font-size:1.72rem;font-weight:800;margin:8px 0 18px;line-height:1.18}
+.grid{display:grid;grid-template-columns:1fr;gap:10px}
+.field label{display:block;font-size:.82rem;color:var(--muted);margin:0 0 5px;font-weight:650}
+input[type=text]{width:100%;font-size:1.02rem;padding:13px 12px;border:1.5px solid #cfd9cf;border-radius:12px;outline:none;background:#fbfcfb}
+input[type=text]:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(47,125,50,.10)}
+input.correct{border-color:var(--ok);background:#f1fbf3}
+input.wrong{border-color:var(--bad);background:#fff4f4}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+button{border:0;border-radius:12px;padding:13px 14px;font-size:1rem;font-weight:750;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button.primary{background:var(--green);color:white}
+button.secondary{background:#edf2ec;color:#263628}
+button.ghost{background:#fff;border:1px solid #d8e1d7;color:#334435}
+button:disabled{opacity:.5;cursor:default}
+.feedback{margin-top:14px;border-radius:14px;padding:13px 14px;display:none;line-height:1.45}
+.feedback.ok{display:block;background:#edf8ef;color:#245d31;border:1px solid #cde7d2}
+.feedback.bad{display:block;background:#fff1f1;color:#7d2929;border:1px solid #f0cece}
+.solution{font-weight:800;margin-top:4px}
+.boxes{margin-top:16px;padding:16px 18px;background:#fbfcfb;border-top:1px solid var(--line)}
+.boxes-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.boxes-head b{font-size:.95rem}
+.boxes-head span{font-size:.78rem;color:var(--muted)}
+.boxrow{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.box{padding:9px 4px;border-radius:10px;background:#edf2ec;text-align:center}
+.box strong{display:block;font-size:1rem}
+.box small{color:var(--muted)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+
+.session-select{margin-top:4px}
+.size-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.size-btn{background:#eef3ed;color:#2d3d2f;border:1px solid #d7e1d6;padding:11px 6px}
+.size-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.size-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+
+.note{font-size:.82rem;color:var(--muted);margin:14px 2px 0;line-height:1.4}
+.modal{position:fixed;inset:0;background:rgba(15,25,17,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:10}
+.modal.show{display:flex}
+.modalbox{width:min(560px,100%);background:white;border-radius:18px;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modalbox h2{margin:0 0 10px}
+.modalbox p{color:var(--muted);line-height:1.5}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr)} .card{padding:28px 26px 22px} .prompt{font-size:2rem}}
+
+.top-session-select{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 8px 24px rgba(31,54,35,.06);
+}
+.top-session-select .boxes-head{margin-bottom:10px}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <h1>Irregular Verbs Trainer</h1>
+      <p>Karteikasten: Schwierige Verben kommen häufiger.</p>
+    </div>
+    <div class="pill" id="boxPill">Box 1</div>
+  </header>
+
+  <section class="session-select top-session-select">
+    <div class="boxes-head">
+      <b>Wie viele Verben möchtest du üben?</b>
+      <span>Je nachdem, wie viel Zeit du hast</span>
+    </div>
+    <div class="size-buttons" id="sizeButtons">
+      <button type="button" class="size-btn" data-size="5">5</button>
+      <button type="button" class="size-btn" data-size="10">10</button>
+      <button type="button" class="size-btn" data-size="15">15</button>
+      <button type="button" class="size-btn" data-size="20">20</button>
+    </div>
+    <div id="initStatus" style="margin-top:9px;font-size:.78rem;color:var(--muted)">Trainer wird geladen …</div>
+  </section>
+
+  <section class="panel">
+    <div class="topbar">
+      <div class="stat"><b id="sessionCount">0/15</b><span>Runde</span></div>
+      <div class="stat"><b id="correctCount">0</b><span>richtig</span></div>
+      <div class="stat"><b id="masteredCount">0</b><span>sicher</span></div>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+
+    <div class="card">
+      <div class="label">Deutsch</div>
+      <div class="prompt" id="prompt">–</div>
+
+      <div class="grid">
+        <div class="field"><label>Infinitive</label><input id="inf" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+        <div class="field"><label>Simple past</label><input id="past" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+        <div class="field"><label>Past participle</label><input id="part" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="primary" id="checkBtn">Prüfen</button>
+        <button type="button" class="secondary" id="showBtn">Lösung zeigen</button>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="boxes">
+      <div class="boxes-head"><b>Dein Karteikasten</b><span>Box 5 = sitzt sehr sicher</span></div>
+      <div class="boxrow" id="boxrow"></div>
+      <div class="controls">
+        <button type="button" class="ghost" id="newRoundBtn">Neue Runde</button>
+        <button type="button" class="ghost" id="resetBtn">Fortschritt zurücksetzen</button>
+      </div>
+      <p class="note">Richtig → eine Box weiter. Falsch oder „Lösung zeigen“ → zurück in Box 1. Die Rundengröße kannst du jederzeit wechseln. Der Lernstand bleibt auf diesem Gerät gespeichert.</p>
+    </div>
+  </section>
+</div>
+
+<div class="modal" id="roundModal">
+  <div class="modalbox">
+    <h2>Runde geschafft</h2>
+    <p id="roundText"></p>
+    <div class="modal-actions">
+      <button type="button" class="secondary" id="closeModalBtn">Später</button>
+      <button type="button" class="primary" id="startNextBtn">Nächste Runde</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const VERBS = [{"de": "sein", "inf": ["be"], "past": ["was/were", "was, were", "was / were"], "part": ["been"], "show": ["be", "was/were", "been"]}, {"de": "werden", "inf": ["become"], "past": ["became"], "part": ["become"], "show": ["become", "became", "become"]}, {"de": "beginnen; anfangen", "inf": ["begin"], "past": ["began"], "part": ["begun"], "show": ["begin", "began", "begun"]}, {"de": "bringen; mitbringen", "inf": ["bring"], "past": ["brought"], "part": ["brought"], "show": ["bring", "brought", "brought"]}, {"de": "bauen", "inf": ["build"], "past": ["built"], "part": ["built"], "show": ["build", "built", "built"]}, {"de": "kaufen", "inf": ["buy"], "past": ["bought"], "part": ["bought"], "show": ["buy", "bought", "bought"]}, {"de": "auswählen; wählen", "inf": ["choose"], "past": ["chose"], "part": ["chosen"], "show": ["choose", "chose", "chosen"]}, {"de": "kommen", "inf": ["come"], "past": ["came"], "part": ["come"], "show": ["come", "came", "come"]}, {"de": "schneiden", "inf": ["cut"], "past": ["cut"], "part": ["cut"], "show": ["cut", "cut", "cut"]}, {"de": "machen; tun", "inf": ["do"], "past": ["did"], "part": ["done"], "show": ["do", "did", "done"]}, {"de": "zeichnen", "inf": ["draw"], "past": ["drew"], "part": ["drawn"], "show": ["draw", "drew", "drawn"]}, {"de": "trinken", "inf": ["drink"], "past": ["drank"], "part": ["drunk"], "show": ["drink", "drank", "drunk"]}, {"de": "fahren", "inf": ["drive"], "past": ["drove"], "part": ["driven"], "show": ["drive", "drove", "driven"]}, {"de": "essen", "inf": ["eat"], "past": ["ate"], "part": ["eaten"], "show": ["eat", "ate", "eaten"]}, {"de": "fallen", "inf": ["fall"], "past": ["fell"], "part": ["fallen"], "show": ["fall", "fell", "fallen"]}, {"de": "füttern", "inf": ["feed"], "past": ["fed"], "part": ["fed"], "show": ["feed", "fed", "fed"]}, {"de": "(sich) fühlen", "inf": ["feel"], "past": ["felt"], "part": ["felt"], "show": ["feel", "felt", "felt"]}, {"de": "kämpfen; (sich) streiten", "inf": ["fight"], "past": ["fought"], "part": ["fought"], "show": ["fight", "fought", "fought"]}, {"de": "finden; herausfinden", "inf": ["find"], "past": ["found"], "part": ["found"], "show": ["find", "found", "found"]}, {"de": "vergessen", "inf": ["forget"], "past": ["forgot"], "part": ["forgotten"], "show": ["forget", "forgot", "forgotten"]}, {"de": "einfrieren; frieren", "inf": ["freeze"], "past": ["froze"], "part": ["frozen"], "show": ["freeze", "froze", "frozen"]}, {"de": "bekommen; werden", "inf": ["get"], "past": ["got"], "part": ["got", "gotten"], "show": ["get", "got", "got"]}, {"de": "aufstehen", "inf": ["get up"], "past": ["got up"], "part": ["got up", "gotten up"], "show": ["get up", "got up", "got up"]}, {"de": "geben", "inf": ["give"], "past": ["gave"], "part": ["given"], "show": ["give", "gave", "given"]}, {"de": "gehen; fahren", "inf": ["go"], "past": ["went"], "part": ["gone"], "show": ["go", "went", "gone"]}, {"de": "wachsen; anbauen; züchten", "inf": ["grow"], "past": ["grew"], "part": ["grown"], "show": ["grow", "grew", "grown"]}, {"de": "rumhängen; sich treffen", "inf": ["hang out"], "past": ["hung out"], "part": ["hung out"], "show": ["hang out", "hung out", "hung out"]}, {"de": "haben; essen", "inf": ["have"], "past": ["had"], "part": ["had"], "show": ["have", "had", "had"]}, {"de": "hören", "inf": ["hear"], "past": ["heard"], "part": ["heard"], "show": ["hear", "heard", "heard"]}, {"de": "halten; festhalten; tragen", "inf": ["hold"], "past": ["held"], "part": ["held"], "show": ["hold", "held", "held"]}, {"de": "weh tun; verletzen", "inf": ["hurt"], "past": ["hurt"], "part": ["hurt"], "show": ["hurt", "hurt", "hurt"]}, {"de": "behalten; halten; aufbewahren", "inf": ["keep"], "past": ["kept"], "part": ["kept"], "show": ["keep", "kept", "kept"]}, {"de": "wissen; kennen", "inf": ["know"], "past": ["knew"], "part": ["known"], "show": ["know", "knew", "known"]}, {"de": "lernen", "inf": ["learn"], "past": ["learnt", "learned"], "part": ["learnt", "learned"], "show": ["learn", "learnt/learned", "learnt/learned"]}, {"de": "abfahren; verlassen; lassen", "inf": ["leave"], "past": ["left"], "part": ["left"], "show": ["leave", "left", "left"]}, {"de": "lassen", "inf": ["let"], "past": ["let"], "part": ["let"], "show": ["let", "let", "let"]}, {"de": "machen; tun; bilden", "inf": ["make"], "past": ["made"], "part": ["made"], "show": ["make", "made", "made"]}, {"de": "bedeuten; meinen", "inf": ["mean"], "past": ["meant"], "part": ["meant"], "show": ["mean", "meant", "meant"]}, {"de": "treffen; kennenlernen", "inf": ["meet"], "past": ["met"], "part": ["met"], "show": ["meet", "met", "met"]}, {"de": "bezahlen", "inf": ["pay"], "past": ["paid"], "part": ["paid"], "show": ["pay", "paid", "paid"]}, {"de": "stellen; setzen; legen", "inf": ["put"], "past": ["put"], "part": ["put"], "show": ["put", "put", "put"]}, {"de": "lesen", "inf": ["read"], "past": ["read"], "part": ["read"], "show": ["read", "read", "read"]}, {"de": "fahren; reiten", "inf": ["ride"], "past": ["rode"], "part": ["ridden"], "show": ["ride", "rode", "ridden"]}, {"de": "rennen; laufen", "inf": ["run"], "past": ["ran"], "part": ["run"], "show": ["run", "ran", "run"]}, {"de": "sagen; sprechen", "inf": ["say"], "past": ["said"], "part": ["said"], "show": ["say", "said", "said"]}, {"de": "sehen", "inf": ["see"], "past": ["saw"], "part": ["seen"], "show": ["see", "saw", "seen"]}, {"de": "verkaufen", "inf": ["sell"], "past": ["sold"], "part": ["sold"], "show": ["sell", "sold", "sold"]}, {"de": "schicken; senden", "inf": ["send"], "past": ["sent"], "part": ["sent"], "show": ["send", "sent", "sent"]}, {"de": "schütteln", "inf": ["shake"], "past": ["shook"], "part": ["shaken"], "show": ["shake", "shook", "shaken"]}, {"de": "zeigen", "inf": ["show"], "past": ["showed"], "part": ["shown", "showed"], "show": ["show", "showed", "shown"]}, {"de": "singen", "inf": ["sing"], "past": ["sang"], "part": ["sung"], "show": ["sing", "sang", "sung"]}, {"de": "untergehen; sinken", "inf": ["sink"], "past": ["sank"], "part": ["sunk"], "show": ["sink", "sank", "sunk"]}, {"de": "sich hinsetzen; sich setzen", "inf": ["sit down"], "past": ["sat down"], "part": ["sat down"], "show": ["sit down", "sat down", "sat down"]}, {"de": "schlafen", "inf": ["sleep"], "past": ["slept"], "part": ["slept"], "show": ["sleep", "slept", "slept"]}, {"de": "riechen", "inf": ["smell"], "past": ["smelt", "smelled"], "part": ["smelt", "smelled"], "show": ["smell", "smelt/smelled", "smelt/smelled"]}, {"de": "sprechen", "inf": ["speak"], "past": ["spoke"], "part": ["spoken"], "show": ["speak", "spoke", "spoken"]}, {"de": "buchstabieren", "inf": ["spell"], "past": ["spelt", "spelled"], "part": ["spelt", "spelled"], "show": ["spell", "spelt/spelled", "spelt/spelled"]}, {"de": "(Zeit) verbringen; (Geld) ausgeben", "inf": ["spend"], "past": ["spent"], "part": ["spent"], "show": ["spend", "spent", "spent"]}, {"de": "stehen", "inf": ["stand"], "past": ["stood"], "part": ["stood"], "show": ["stand", "stood", "stood"]}, {"de": "kleben", "inf": ["stick"], "past": ["stuck"], "part": ["stuck"], "show": ["stick", "stuck", "stuck"]}, {"de": "schwimmen", "inf": ["swim"], "past": ["swam"], "part": ["swum"], "show": ["swim", "swam", "swum"]}, {"de": "nehmen; mitnehmen; dauern", "inf": ["take"], "past": ["took"], "part": ["taken"], "show": ["take", "took", "taken"]}, {"de": "sagen; erzählen", "inf": ["tell"], "past": ["told"], "part": ["told"], "show": ["tell", "told", "told"]}, {"de": "finden; denken; glauben", "inf": ["think"], "past": ["thought"], "part": ["thought"], "show": ["think", "thought", "thought"]}, {"de": "werfen", "inf": ["throw"], "past": ["threw"], "part": ["thrown"], "show": ["throw", "threw", "thrown"]}, {"de": "verstehen", "inf": ["understand"], "past": ["understood"], "part": ["understood"], "show": ["understand", "understood", "understood"]}, {"de": "aufwachen; wecken", "inf": ["wake up"], "past": ["woke up"], "part": ["woken up"], "show": ["wake up", "woke up", "woken up"]}, {"de": "(Kleidung) tragen; anhaben", "inf": ["wear"], "past": ["wore"], "part": ["worn"], "show": ["wear", "wore", "worn"]}, {"de": "gewinnen; siegen", "inf": ["win"], "past": ["won"], "part": ["won"], "show": ["win", "won", "won"]}, {"de": "schreiben", "inf": ["write"], "past": ["wrote"], "part": ["written"], "show": ["write", "wrote", "written"]}];
+const STORAGE_KEY = "irregular_verbs_trainer_v1";
+
+function safeStorageGet(key){
+  try { return window.localStorage ? window.localStorage.getItem(key) : null; }
+  catch(e) { return null; }
+}
+
+function safeStorageSet(key, value){
+  try {
+    if(window.localStorage) window.localStorage.setItem(key, value);
+    return true;
+  } catch(e) {
+    return false;
+  }
+}
+
+let SESSION_SIZE = Number(safeStorageGet("irregular_verbs_session_size")) || 15;
+// Leitner-like intervals measured in reviewed cards
+const INTERVALS = {1:1, 2:3, 3:7, 4:15, 5:30};
+
+let state = loadState();
+let session = {asked:0, correct:0};
+let current = null;
+let revealed = false;
+
+function defaultState(){
+  return {
+    totalReviews:0,
+    cards: VERBS.map((_,i)=>({box:1, due:i, seen:0, right:0, wrong:0}))
+  };
+}
+
+function loadState(){
+  try{
+    const saved = JSON.parse(safeStorageGet(STORAGE_KEY));
+    if(saved && saved.cards && saved.cards.length === VERBS.length) return saved;
+  }catch(e){}
+  return defaultState();
+}
+
+function saveState(){
+  safeStorageSet(STORAGE_KEY, JSON.stringify(state));
+}
+
+function normalize(s){
+  return (s||"")
+    .toLowerCase()
+    .trim()
+    .replace(/[’']/g,"'")
+    .replace(/\s*\/\s*/g,"/")
+    .replace(/\s*,\s*/g,",")
+    .replace(/\s+/g," ");
+}
+
+function accepted(input, options){
+  const n = normalize(input);
+  return options.map(normalize).includes(n);
+}
+
+function dueCandidates(){
+  const due = [];
+  state.cards.forEach((c,i)=>{ if(c.due <= state.totalReviews) due.push(i); });
+  return due;
+}
+
+function chooseNext(){
+  let candidates = dueCandidates();
+  if(!candidates.length){
+    let minDue = Math.min(...state.cards.map(c=>c.due));
+    candidates = state.cards.map((c,i)=>c.due===minDue ? i : -1).filter(i=>i>=0);
+  }
+  // Among due cards, favor lower boxes and cards seen less often.
+  const weights = candidates.map(i=>{
+    const c = state.cards[i];
+    return (6-c.box) * (1 + 1/(1+c.seen));
+  });
+  let r = Math.random() * weights.reduce((a,b)=>a+b,0);
+  let idx = candidates[0];
+  for(let j=0;j<candidates.length;j++){ r -= weights[j]; if(r<=0){ idx=candidates[j]; break; } }
+  current = idx;
+  revealed = false;
+  renderCard();
+}
+
+function renderCard(){
+  const v = VERBS[current];
+  const c = state.cards[current];
+  document.getElementById("prompt").textContent = v.de;
+  document.getElementById("boxPill").textContent = "Box " + c.box;
+  ["inf","past","part"].forEach(id=>{
+    const el=document.getElementById(id); el.value=""; el.className="";
+    el.disabled=false;
+  });
+  const fb=document.getElementById("feedback");
+  fb.className="feedback"; fb.innerHTML="";
+  document.getElementById("checkBtn").disabled=false;
+  document.getElementById("showBtn").disabled=false;
+  document.getElementById("checkBtn").textContent="Prüfen";
+  updateStats();
+  setTimeout(()=>document.getElementById("inf").focus(),50);
+}
+
+function markResult(ok, shown=false){
+  const c = state.cards[current];
+  c.seen += 1;
+  state.totalReviews += 1;
+  session.asked += 1;
+  if(ok){
+    c.right += 1;
+    c.box = Math.min(5, c.box + 1);
+    session.correct += 1;
+  } else {
+    c.wrong += 1;
+    c.box = 1;
+  }
+  c.due = state.totalReviews + INTERVALS[c.box];
+  saveState();
+  updateStats();
+  document.getElementById("boxPill").textContent = "Box " + c.box;
+}
+
+function lockInputs(){
+  ["inf","past","part"].forEach(id=>document.getElementById(id).disabled=true);
+  document.getElementById("checkBtn").disabled=true;
+  document.getElementById("showBtn").disabled=true;
+}
+
+function check(){
+  if(revealed) return;
+  const v = VERBS[current];
+  const vals = {
+    inf:document.getElementById("inf").value,
+    past:document.getElementById("past").value,
+    part:document.getElementById("part").value
+  };
+  const res = {
+    inf:accepted(vals.inf,v.inf),
+    past:accepted(vals.past,v.past),
+    part:accepted(vals.part,v.part)
+  };
+  Object.keys(res).forEach(k=>document.getElementById(k).className = res[k] ? "correct":"wrong");
+  const ok = res.inf && res.past && res.part;
+  markResult(ok,false);
+  lockInputs();
+  const fb=document.getElementById("feedback");
+  fb.className="feedback " + (ok ? "ok":"bad");
+  fb.innerHTML = ok
+    ? "<b>Richtig!</b> Das Verb wandert eine Box weiter."
+    : "<b>Noch nicht ganz.</b><div class='solution'>" + v.show.join(" – ") + "</div>";
+  makeNextButton();
+}
+
+function showSolution(){
+  if(revealed) return;
+  revealed = true;
+  const v = VERBS[current];
+  document.getElementById("inf").value=v.show[0];
+  document.getElementById("past").value=v.show[1];
+  document.getElementById("part").value=v.show[2];
+  ["inf","past","part"].forEach(id=>document.getElementById(id).className="wrong");
+  markResult(false,true);
+  lockInputs();
+  const fb=document.getElementById("feedback");
+  fb.className="feedback bad";
+  fb.innerHTML="<b>Lösung:</b><div class='solution'>" + v.show.join(" – ") + "</div><div>Diese Karte kommt bald wieder.</div>";
+  makeNextButton();
+}
+
+function makeNextButton(){
+  const btn=document.getElementById("checkBtn");
+  btn.disabled=false;
+  btn.textContent="Nächstes Verb";
+  btn.onclick=nextAfterAnswer;
+  document.getElementById("showBtn").disabled=true;
+}
+
+function nextAfterAnswer(){
+  document.getElementById("checkBtn").onclick=check;
+  if(session.asked >= SESSION_SIZE){
+    showRoundModal();
+  } else {
+    chooseNext();
+  }
+}
+
+function updateStats(){
+  document.getElementById("sessionCount").textContent = session.asked + "/" + SESSION_SIZE;
+  document.getElementById("correctCount").textContent = session.correct;
+  const mastered = state.cards.filter(c=>c.box===5).length;
+  document.getElementById("masteredCount").textContent = mastered;
+  document.getElementById("progressBar").style.width = (100*session.asked/SESSION_SIZE) + "%";
+  const counts=[1,2,3,4,5].map(b=>state.cards.filter(c=>c.box===b).length);
+  document.getElementById("boxrow").innerHTML = counts.map((n,i)=>"<div class='box'><strong>"+n+"</strong><small>Box "+(i+1)+"</small></div>").join("");
+  document.querySelectorAll(".size-btn").forEach(btn=>{
+    btn.classList.toggle("active", Number(btn.dataset.size) === SESSION_SIZE);
+  });
+}
+
+function showRoundModal(){
+  const pct = Math.round(100*session.correct/Math.max(1,session.asked));
+  document.getElementById("roundText").textContent =
+    "Du hattest " + session.correct + " von " + session.asked + " richtig (" + pct + " %). Sichere Verben werden jetzt seltener abgefragt. Für die nächste Runde kannst du oben wieder 5, 10, 15 oder 20 Verben wählen.";
+  document.getElementById("roundModal").classList.add("show");
+}
+
+function startNewRound(){
+  session={asked:0,correct:0};
+  document.getElementById("roundModal").classList.remove("show");
+  document.getElementById("checkBtn").onclick=check;
+  chooseNext();
+}
+
+document.getElementById("checkBtn").onclick=check;
+document.getElementById("showBtn").onclick=showSolution;
+document.querySelectorAll(".size-btn").forEach(btn=>{
+  btn.onclick=()=>{
+    SESSION_SIZE = Number(btn.dataset.size);
+    safeStorageSet("irregular_verbs_session_size", String(SESSION_SIZE));
+    startNewRound();
+  };
+});
+document.getElementById("newRoundBtn").onclick=startNewRound;
+document.getElementById("closeModalBtn").onclick=()=>document.getElementById("roundModal").classList.remove("show");
+document.getElementById("startNextBtn").onclick=startNewRound;
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("Wirklich den gesamten Lernfortschritt löschen?")){
+    state=defaultState(); saveState(); startNewRound();
+  }
+};
+["inf","past","part"].forEach(id=>document.getElementById(id).addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    e.preventDefault();
+    if(id==="inf") document.getElementById("past").focus();
+    else if(id==="past") document.getElementById("part").focus();
+    else document.getElementById("checkBtn").click();
+  }
+}));
+
+updateStats();
+chooseNext();
+const initStatus = document.getElementById("initStatus");
+if(initStatus) initStatus.textContent = "Bereit – wähle 5, 10, 15 oder 20 Verben.";
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
